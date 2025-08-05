@@ -22,6 +22,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
+
+    flavorDimensions.add("environment")
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            buildConfigField("String", "API_BASE_URL", "\"https://raw.githubusercontent.com/erik-sytnyk/movies-list/master/\"")
+        }
+        create("production") {
+            dimension = "environment"
+            buildConfigField("String", "API_BASE_URL", "\"https://raw.githubusercontent.com/erik-sytnyk/movies-list/master/\"")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -35,11 +52,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kapt {
+        correctErrorTypes = true
+    }
     kotlinOptions {
         jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
     }
 }
 
@@ -61,7 +78,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-
     // Compose Libs
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.foundation)
@@ -80,6 +96,9 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
+
+    // GSON
+    implementation(libs.gson)
 
     // Room Database
     implementation(libs.androidx.room.runtime)
