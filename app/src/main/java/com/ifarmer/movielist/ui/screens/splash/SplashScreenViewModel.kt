@@ -22,6 +22,4 @@ class SplashScreenViewModel @Inject constructor(
     val viewEvent = _viewEvent.asSharedFlow()
 
 
-
-
 }
