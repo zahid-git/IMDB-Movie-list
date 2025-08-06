@@ -8,9 +8,6 @@ import retrofit2.http.Query
 interface ApiService {
 
     @GET("db.json")
-    suspend fun fetchMovieData(
-        @Query("page") page: Int,
-        @Query("limit") limit: Int
-    ) : Response<List<MovieResponse>>
+    suspend fun fetchMovieData() : Response<MovieResponse>
 
 }
