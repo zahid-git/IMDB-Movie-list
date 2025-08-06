@@ -21,7 +21,7 @@ object MovieAppModule {
      * */
     @Provides
     @Singleton
-    fun provideMovieRepository(apiService: ApiService, movieLocalDataSource: MovieLocalDataSource): MovieRepository = MovieRepositoryImpl(apiService = apiService, movieDataSource = movieLocalDataSource)
+    fun provideMovieRepository(apiService: ApiService, movieLocalDataSource: MovieLocalDataSource): MovieRepository = MovieRepositoryImpl(apiService = apiService, movieLocalDataSource = movieLocalDataSource)
 
     /**
      * Provides Movie Use-case

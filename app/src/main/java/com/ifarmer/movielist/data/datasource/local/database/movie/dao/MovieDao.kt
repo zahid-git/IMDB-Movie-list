@@ -21,6 +21,12 @@ interface MovieDao {
     @Query("SELECT * FROM movies")
     fun getUserProfileList(): List<MovieEntities>
 
+    @Query("SELECT * FROM movies ORDER BY id DESC LIMIT :limit OFFSET :offset")
+    fun getMoviesWithOffset(limit: Int, offset: Int): List<MovieEntities>
+
+    @Query("SELECT * FROM movies LIMIT :limit")
+    fun getMovies(limit : Int ): List<MovieEntities>
+
     @Query("DELETE FROM movies")
     fun deleteAllMovies()
 

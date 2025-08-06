@@ -17,17 +17,22 @@ import javax.inject.Inject
 
 class MovieRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
-    private val movieDataSource: MovieLocalDataSource
+    private val movieLocalDataSource: MovieLocalDataSource
 ) : MovieRepository, NetworkCallback() {
 
-    override suspend fun fetchMovieList(): Flow<List<MovieDataModel>?> = flow{
+    override suspend fun fetchMovieList(): Flow<DataResult<List<MovieDataModel>>> = flow{
         try {
+            emit(DataResult.OnLoading<List<MovieDataModel>>())
+            if (movieLocalDataSource.isDataExist()) {
+                emit(DataResult.OnSuccess<List<MovieDataModel>>(data = arrayListOf()))
+                return@flow
+            }
             val movieData = safeAPICall { apiService.fetchMovieData() }
 
             when(movieData) {
                 is DataResult.OnLoading<*> -> { }
                 is DataResult.OnFail<*> -> {
-                    emit(null)
+                    emit(DataResult.OnFail<List<MovieDataModel>>(data = null, code = movieData.code, message = movieData.message))
                 }
                 is DataResult.OnSuccess<*> -> {
                     var movieList = movieData.data?.data?.movies.let {
@@ -37,11 +42,12 @@ class MovieRepositoryImpl @Inject constructor(
                         }
                         movieEntities
                     }
-                    movieDataSource.saveAllMovies(movieList)
+                    movieLocalDataSource.saveAllMovies(movieList)
+                    emit(DataResult.OnSuccess<List<MovieDataModel>>(data = arrayListOf()))
                 }
             }
         } catch (e: Exception) {
-            emit(throw Exception(e))
+            emit(DataResult.OnFail<List<MovieDataModel>>(data = null, code = null, message = e.message))
         }
     }.flowOn(Dispatchers.IO)
 

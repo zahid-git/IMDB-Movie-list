@@ -8,8 +8,12 @@ class MovieLocalDataSource @Inject constructor(
     private val movieDao: MovieDao
 ) {
 
-    suspend fun saveAllMovies(movies: List<MovieEntities>){
+    fun saveAllMovies(movies: List<MovieEntities>){
         return movieDao.insetMovies(movies)
+    }
+
+    fun isDataExist(): Boolean {
+        return movieDao.getMovies(1).isNotEmpty()
     }
 
 
