@@ -1,11 +1,13 @@
 package com.ifarmer.movielist.di
 
+import android.content.Context
 import com.google.gson.Gson
 import com.ifarmer.movielist.BuildConfig
 import com.ifarmer.movielist.data.datasource.remote.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -16,6 +18,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    /**
+     * Provides Application Context for Database
+     * */
+    @Singleton
+    @Provides
+    fun provideContext(@ApplicationContext appContext: Context) = appContext
 
     /**
      * Provides GSON

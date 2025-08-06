@@ -1,11 +1,13 @@
 package com.ifarmer.movielist.domain.usecase
 
+import com.ifarmer.movielist.data.model.response.MovieDataModel
 import com.ifarmer.movielist.domain.repository.MovieRepository
+import kotlinx.coroutines.flow.Flow
 
 class GetAllMovieUseCase (
     private val repository: MovieRepository
 ) {
-    suspend operator fun invoke(){
+    suspend operator fun invoke(): Flow<List<MovieDataModel>?> {
         return repository.fetchMovieList()
     }
 }
