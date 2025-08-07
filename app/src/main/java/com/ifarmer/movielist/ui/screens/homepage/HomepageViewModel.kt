@@ -13,11 +13,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomepageViewModel @Inject constructor(
-    getMoviePaginatedUseCase: GetMoviePaginatedUseCase
+    private val getMoviePaginatedUseCase: GetMoviePaginatedUseCase
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(HomepageViewState())
@@ -26,6 +27,16 @@ class HomepageViewModel @Inject constructor(
     private val _viewEvent = MutableSharedFlow<HomepageViewEvent>()
     val viewEvent = _viewEvent.asSharedFlow()
 
-    var getMovieList = getMoviePaginatedUseCase().cachedIn(viewModelScope)
+    init {
+        getMovieData()
+    }
+
+    fun getMovieData(){
+        viewModelScope.launch {
+            _viewState.value = _viewState.value.copy(
+                movieData = getMoviePaginatedUseCase()
+            )
+        }
+    }
 
 }

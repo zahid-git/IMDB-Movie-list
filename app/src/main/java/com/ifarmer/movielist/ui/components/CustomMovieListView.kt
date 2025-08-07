@@ -76,7 +76,7 @@ fun MovieListItem(movie: MovieEntities?) {
                     Text(
                         modifier = Modifier
                             .wrapContentWidth()
-                            .padding(top = 5.dp),
+                            .padding(top = 10.dp),
                         fontSize = 18.sp,
                         text = it
                     )
@@ -100,13 +100,13 @@ fun MovieListItem(movie: MovieEntities?) {
                             modifier = Modifier
                                 .wrapContentWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFF989898), // Light cyan background
+                                containerColor = Color(0xFFD3D3D3), // Light cyan background
                                 contentColor = Color.Black // Text/Icon color
                             )
                         ) {
                             Text(
                                 modifier = Modifier
-                                    .padding(start = 10.dp, end = 10.dp, top = 3.dp, bottom = 3.dp),
+                                    .padding(start = 8.dp, end = 8.dp),
                                 text = genre,
                                 fontSize = 10.sp
                             )
