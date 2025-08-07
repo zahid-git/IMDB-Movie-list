@@ -1,8 +1,11 @@
 package com.ifarmer.movielist.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.ifarmer.movielist.data.datasource.DataResult
+import com.ifarmer.movielist.data.datasource.MoviePagingSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.MovieLocalDataSource
-import com.ifarmer.movielist.data.datasource.local.database.movie.dao.MovieDao
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 import com.ifarmer.movielist.data.datasource.remote.ApiService
 import com.ifarmer.movielist.data.datasource.remote.NetworkCallback
@@ -50,5 +53,24 @@ class MovieRepositoryImpl @Inject constructor(
             emit(DataResult.OnFail<List<MovieDataModel>>(data = null, code = null, message = e.message))
         }
     }.flowOn(Dispatchers.IO)
+
+    override fun getPaginatedData(): Flow<PagingData<MovieEntities>> {
+        val pageSize: Int = 10 // As per business logic
+        val enablePlaceHolders: Boolean = true
+        val prefetchDistance: Int = 1
+        val initialLoadSize: Int = 7
+        val maxCacheSize: Int = 2000
+        return Pager(
+            config = PagingConfig(
+                pageSize = pageSize,
+                enablePlaceholders = enablePlaceHolders,
+                prefetchDistance = prefetchDistance,
+                initialLoadSize = initialLoadSize,
+                maxSize = maxCacheSize
+            ), pagingSourceFactory = {
+                MoviePagingSource(movieLocalDataSource, 1)
+            }
+        ).flow
+    }
 
 }

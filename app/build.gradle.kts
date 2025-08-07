@@ -2,10 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("org.jetbrains.kotlin.kapt")
-    id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
-    id ("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    id("dagger.hilt.android.plugin")
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
+    id ("com.google.devtools.ksp") version "2.2.0-2.0.2" apply true
 }
 
 android {
@@ -55,6 +55,9 @@ android {
     kapt {
         correctErrorTypes = true
     }
+    hilt {
+        enableAggregatingTask = true
+    }
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -103,10 +106,10 @@ dependencies {
 
     // Room Database
     implementation(libs.androidx.room.runtime)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     // Image Loader
     implementation(libs.coil.compose)
-
 
 }

@@ -3,6 +3,7 @@ package com.ifarmer.movielist.data.datasource.local.database.movie.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.ifarmer.movielist.data.model.response.MovieDataModel
 
 @Entity(tableName = "movies")
 data class MovieEntities(
@@ -16,3 +17,17 @@ data class MovieEntities(
     @ColumnInfo(name = "plot") val plot: String,
     @ColumnInfo(name = "posterUrl") val posterUrl: String,
 )
+
+fun MovieEntities.toDataModel(): MovieDataModel {
+    return MovieDataModel(
+        id = id,
+        title = title,
+        year = year,
+        runtime = runtime,
+        genres = genres,
+        director = director,
+        actors = actors,
+        plot = plot,
+        posterUrl = posterUrl
+    )
+}
