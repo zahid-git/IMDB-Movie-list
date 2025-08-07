@@ -7,6 +7,7 @@ import com.ifarmer.movielist.data.datasource.DataResult
 import com.ifarmer.movielist.data.datasource.MoviePagingSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.MovieLocalDataSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
 import com.ifarmer.movielist.data.datasource.remote.ApiService
 import com.ifarmer.movielist.data.datasource.remote.NetworkCallback
 import com.ifarmer.movielist.data.model.response.MovieDataModel
@@ -23,38 +24,64 @@ class MovieRepositoryImpl @Inject constructor(
     private val movieLocalDataSource: MovieLocalDataSource
 ) : MovieRepository, NetworkCallback() {
 
-    override suspend fun fetchMovieList(): Flow<DataResult<List<MovieDataModel>>> = flow{
-        try {
-            emit(DataResult.OnLoading<List<MovieDataModel>>())
-            if (movieLocalDataSource.isDataExist()) {
-                emit(DataResult.OnSuccess<List<MovieDataModel>>(data = arrayListOf()))
-                return@flow
-            }
-            val movieData = safeAPICall { apiService.fetchMovieData() }
-
-            when(movieData) {
-                is DataResult.OnLoading<*> -> { }
-                is DataResult.OnFail<*> -> {
-                    emit(DataResult.OnFail<List<MovieDataModel>>(data = null, code = movieData.code, message = movieData.message))
-                }
-                is DataResult.OnSuccess<*> -> {
-                    var movieList = movieData.data?.data?.movies.let {
-                        var movieEntities: ArrayList<MovieEntities> = arrayListOf()
-                        for (movie in it!!) {
-                            movieEntities.add(movie.toEntity())
-                        }
-                        movieEntities
-                    }
-                    movieLocalDataSource.saveAllMovies(movieList)
+    override suspend fun fetchMovieList(): Flow<DataResult<List<MovieDataModel>>> =
+        flow {
+            try {
+                emit(DataResult.OnLoading<List<MovieDataModel>>())
+                if (movieLocalDataSource.isDataExist()) {
                     emit(DataResult.OnSuccess<List<MovieDataModel>>(data = arrayListOf()))
+                    return@flow
                 }
-            }
-        } catch (e: Exception) {
-            emit(DataResult.OnFail<List<MovieDataModel>>(data = null, code = null, message = e.message))
-        }
-    }.flowOn(Dispatchers.IO)
+                val movieData = safeAPICall { apiService.fetchMovieData() }
 
-    override fun getPaginatedData(): Flow<PagingData<MovieEntities>> {
+                when (movieData) {
+                    is DataResult.OnLoading<*> -> {}
+                    is DataResult.OnFail<*> -> {
+                        emit(
+                            DataResult.OnFail<List<MovieDataModel>>(
+                                data = null,
+                                code = movieData.code,
+                                message = movieData.message
+                            )
+                        )
+                    }
+
+                    is DataResult.OnSuccess<*> -> {
+                        var movieList = movieData.data?.data?.movies.let {
+                            var movieEntities: ArrayList<MovieEntities> = arrayListOf()
+                            for (movie in it!!) {
+                                movieEntities.add(movie.toEntity())
+                            }
+                            movieEntities
+                        }
+                        movieLocalDataSource.saveAllMovies(movieList)
+
+                        var movieGenreData = movieData.data?.data?.genres.let {
+                            var genres: ArrayList<MovieGenresEntities> = arrayListOf()
+                            var id = 1
+                            for (genre in it!!) {
+                                genres.add(MovieGenresEntities(id = id++, name = genre))
+                            }
+                            genres
+                        }
+                        movieLocalDataSource.saveAllMovieGenres(movieGenreData)
+
+
+                        emit(DataResult.OnSuccess<List<MovieDataModel>>(data = arrayListOf()))
+                    }
+                }
+            } catch (e: Exception) {
+                emit(
+                    DataResult.OnFail<List<MovieDataModel>>(
+                        data = null,
+                        code = null,
+                        message = e.message
+                    )
+                )
+            }
+        }.flowOn(Dispatchers.IO)
+
+    override fun getPaginatedData(genre: String?): Flow<PagingData<MovieEntities>> {
         val pageSize: Int = 10 // As per business logic
         val enablePlaceHolders: Boolean = true
         val prefetchDistance: Int = 1
@@ -68,9 +95,30 @@ class MovieRepositoryImpl @Inject constructor(
                 initialLoadSize = initialLoadSize,
                 maxSize = maxCacheSize
             ), pagingSourceFactory = {
-                MoviePagingSource(movieLocalDataSource, 1)
+                MoviePagingSource(
+                    genre = genre,
+                    movieLocalDataSource = movieLocalDataSource,
+                    numOfOffScreenPage = 1
+                )
             }
         ).flow
     }
+
+    override suspend fun getMovieGenres(): Flow<DataResult<List<MovieGenresEntities>>> = flow {
+        try {
+            emit(DataResult.OnLoading<List<MovieGenresEntities>>())
+            var movieGenres = movieLocalDataSource.getMovieGenres()
+            emit(DataResult.OnSuccess<List<MovieGenresEntities>>(data = movieGenres))
+        } catch (e: Exception) {
+            emit(
+                DataResult.OnFail<List<MovieGenresEntities>>(
+                    data = null,
+                    code = 400,
+                    message = e.message
+                )
+            )
+        }
+    }.flowOn(Dispatchers.IO)
+
 
 }

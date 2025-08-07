@@ -12,7 +12,7 @@ import javax.inject.Inject
 class GetMoviePaginatedUseCase @Inject constructor(
     private val repository: MovieRepository
 ) {
-    operator fun invoke(): Flow<PagingData<MovieEntities>> {
-        return repository.getPaginatedData()
+    operator fun invoke(genre: String?): Flow<PagingData<MovieEntities>> {
+        return repository.getPaginatedData(genre)
     }
 }

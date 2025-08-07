@@ -1,4 +1,6 @@
 package com.ifarmer.movielist.ui.screens.homepage
 
-object HomepageViewEvent {
+sealed class HomepageViewEvent {
+    data class changeGenre(val genreName: String) : HomepageViewEvent()
+
 }

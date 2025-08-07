@@ -67,7 +67,7 @@ fun AppNavHost(
         }
         composable<NavRoutes.HomepageScreen> {
             val homeViewModel: HomepageViewModel = hiltViewModel()
-            HomePageScreen(navController = navController, viewModel = homeViewModel)
+            HomePageScreen(navController = navController, viewState = homeViewModel.viewState, onEvent = homeViewModel::onEvent)
         }
         composable<NavRoutes.MovieDetailsScreen> {
 

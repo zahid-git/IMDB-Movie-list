@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.ifarmer.movielist.data.datasource.DataResult
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
 import com.ifarmer.movielist.data.model.response.MovieDataModel
+import com.ifarmer.movielist.domain.usecase.GetMovieGenreUserCase
 import com.ifarmer.movielist.domain.usecase.GetMoviePaginatedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -18,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomepageViewModel @Inject constructor(
-    private val getMoviePaginatedUseCase: GetMoviePaginatedUseCase
+    private val getMoviePaginatedUseCase: GetMoviePaginatedUseCase,
+    private val getMovieGenreUserCase: GetMovieGenreUserCase
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(HomepageViewState())
@@ -28,14 +32,42 @@ class HomepageViewModel @Inject constructor(
     val viewEvent = _viewEvent.asSharedFlow()
 
     init {
-        getMovieData()
+        getMovieData("")
+        getMovieGenreData()
     }
 
-    fun getMovieData(){
+    fun getMovieData(genre: String?){
         viewModelScope.launch {
             _viewState.value = _viewState.value.copy(
-                movieData = getMoviePaginatedUseCase()
+                movieData = getMoviePaginatedUseCase(genre),
+                title = if(genre.isNullOrEmpty()) "All Movies" else  "Search result for : $genre"
             )
+        }
+    }
+
+    fun getMovieGenreData(){
+        viewModelScope.launch {
+            getMovieGenreUserCase().collect {
+                when(it) {
+                    is DataResult.OnFail<*> -> { }
+                    is DataResult.OnLoading<*> -> { }
+                    is DataResult.OnSuccess<List<MovieGenresEntities>> -> {
+                        it.data?.let { data ->
+                            _viewState.value = _viewState.value.copy(
+                                movieGenres = data
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun onEvent(event: HomepageViewEvent){
+        when(event) {
+            is HomepageViewEvent.changeGenre -> {
+                getMovieData(event.genreName)
+            }
         }
     }
 

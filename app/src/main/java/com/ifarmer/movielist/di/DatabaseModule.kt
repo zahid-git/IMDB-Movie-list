@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.ifarmer.movielist.data.datasource.local.database.AppDatabase
 import com.ifarmer.movielist.data.datasource.local.database.movie.MovieLocalDataSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.dao.MovieDao
+import com.ifarmer.movielist.data.datasource.local.database.movie.dao.MovieGenreDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,10 +31,17 @@ object DatabaseModule {
     fun provideMovieDAO(db: AppDatabase): MovieDao = db.movieDao
 
     /**
+     * Provides MovieGenreDao
+     * */
+    @Singleton
+    @Provides
+    fun provideMovieGenreDAO(db: AppDatabase): MovieGenreDao = db.movieGenreDao
+
+    /**
      * Provides MovieDatasource
      * */
     @Singleton
     @Provides
-    fun provideMovieDataSource(dao: MovieDao): MovieLocalDataSource = MovieLocalDataSource(dao)
+    fun provideMovieDataSource(movieDao: MovieDao, movieGenreDao: MovieGenreDao ): MovieLocalDataSource = MovieLocalDataSource(movieDao = movieDao, movieGenreDao = movieGenreDao)
 
 }

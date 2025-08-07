@@ -8,15 +8,16 @@ import com.ifarmer.movielist.data.datasource.local.database.movie.entities.Movie
 
 
 class MoviePagingSource(
+    private val  genre: String?,
     private val movieLocalDataSource: MovieLocalDataSource,
     private val numOfOffScreenPage: Int = 1,
 ) : PagingSource<Int, MovieEntities>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MovieEntities> {
         val pageIndex = params.key ?: 1
-        val pageSize = params.loadSize
+        val page = params.loadSize
         return try {
-            val movieEntities = movieLocalDataSource.getPaginatedData(pageIndex, pageSize)
+            val movieEntities = movieLocalDataSource.getPaginatedData(genre = genre, limit = pageIndex, page = page)
 
             LoadResult.Page(
                 data = movieEntities,

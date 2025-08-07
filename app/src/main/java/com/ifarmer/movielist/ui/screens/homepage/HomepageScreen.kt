@@ -9,13 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,33 +44,36 @@ import com.ifarmer.movielist.R
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 import com.ifarmer.movielist.ui.components.CustomMovieGridView
 import com.ifarmer.movielist.ui.components.CustomMovieListView
+import com.ifarmer.movielist.ui.screens.homepage.HomepageViewEvent.changeGenre
 import com.ifarmer.movielist.ui.theme.MyIMBDModernMovieAppTheme
+import kotlinx.coroutines.flow.StateFlow
 
 
 @Composable
 fun HomePageScreen(
     navController: NavHostController,
-    viewModel: HomepageViewModel
+    viewState: StateFlow<HomepageViewState>,
+    onEvent: (HomepageViewEvent) -> Unit
 ) {
-    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
-    val movieList = viewState.movieData?.collectAsLazyPagingItems()
+    val homePageViewState by viewState.collectAsStateWithLifecycle()
+    val movieList = homePageViewState.movieData?.collectAsLazyPagingItems()
 
     LaunchedEffect(Unit) {
         movieList?.refresh()
     }
 
-    MainHomepageScreen(movieList)
+    MainHomepageScreen(homePageViewState, movieList, onEvent)
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainHomepageScreen(
-    movieList: LazyPagingItems<MovieEntities>?
+    viewState: HomepageViewState,
+    movieList: LazyPagingItems<MovieEntities>?,
+    onEvent: (HomepageViewEvent) -> Unit
 ) {
     var isGrid by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
-    val options = listOf("Item 1", "Item 2", "Item 3")
 
     MyIMBDModernMovieAppTheme {
         Scaffold(
@@ -115,14 +115,22 @@ fun MainHomepageScreen(
                             )
                         }
                         DropdownMenu(
+                            modifier = Modifier.height(300.dp),
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            options.forEach { item ->
+                            DropdownMenuItem(
+                                text = { Text("All") },
+                                onClick = {
+                                    onEvent(changeGenre(""))
+                                    expanded = false
+                                }
+                            )
+                            viewState.movieGenres.forEach { item ->
                                 DropdownMenuItem(
-                                    text = { Text(item) },
+                                    text = { Text(item.name) },
                                     onClick = {
-
+                                        onEvent(changeGenre(item.name))
                                         expanded = false
                                     }
                                 )
@@ -148,7 +156,7 @@ fun MainHomepageScreen(
                             .weight(1f)
                             .padding(start = 10.dp),
                         fontWeight = FontWeight.Bold,
-                        text = "All Movies"
+                        text = viewState.title
                     )
 
                     // List view icon
@@ -201,6 +209,8 @@ fun MainHomepageScreen(
 @Preview
 fun HomepagePreview() {
     MainHomepageScreen(
-        movieList = null
+        viewState = HomepageViewState(),
+        movieList = null,
+        onEvent = { }
     )
 }
