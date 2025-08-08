@@ -4,12 +4,11 @@ import com.ifarmer.movielist.data.datasource.local.database.movie.MovieLocalData
 import com.ifarmer.movielist.data.datasource.remote.ApiService
 import com.ifarmer.movielist.data.repository.MovieRepositoryImpl
 import com.ifarmer.movielist.domain.repository.MovieRepository
-import com.ifarmer.movielist.domain.usecase.GetAllMovieUseCase
+import com.ifarmer.movielist.domain.usecase.movie.GetAllMovieUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module

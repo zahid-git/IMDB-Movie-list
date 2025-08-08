@@ -1,12 +1,9 @@
-package com.ifarmer.movielist.domain.usecase
+package com.ifarmer.movielist.domain.usecase.movie
 
 import androidx.paging.PagingData
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
-import com.ifarmer.movielist.data.model.response.MovieDataModel
 import com.ifarmer.movielist.domain.repository.MovieRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class GetMoviePaginatedUseCase @Inject constructor(

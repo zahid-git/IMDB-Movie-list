@@ -3,7 +3,7 @@ package com.ifarmer.movielist.ui.screens.splash
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ifarmer.movielist.data.datasource.DataResult
-import com.ifarmer.movielist.domain.usecase.GetAllMovieUseCase
+import com.ifarmer.movielist.domain.usecase.movie.GetAllMovieUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,6 +1,5 @@
-package com.ifarmer.movielist.domain.usecase
+package com.ifarmer.movielist.domain.usecase.movie
 
-import coil.decode.DataSource
 import com.ifarmer.movielist.data.datasource.DataResult
 import com.ifarmer.movielist.data.model.response.MovieDataModel
 import com.ifarmer.movielist.domain.repository.MovieRepository

@@ -2,16 +2,11 @@ package com.ifarmer.movielist.ui.screens.homepage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.ifarmer.movielist.data.datasource.DataResult
-import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
-import com.ifarmer.movielist.data.model.response.MovieDataModel
-import com.ifarmer.movielist.domain.usecase.GetMovieGenreUserCase
-import com.ifarmer.movielist.domain.usecase.GetMoviePaginatedUseCase
+import com.ifarmer.movielist.domain.usecase.movie.GetMovieGenreUserCase
+import com.ifarmer.movielist.domain.usecase.movie.GetMoviePaginatedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow

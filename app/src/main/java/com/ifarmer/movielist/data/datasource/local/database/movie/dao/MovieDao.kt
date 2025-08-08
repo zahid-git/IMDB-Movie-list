@@ -18,8 +18,8 @@ interface MovieDao {
     @Delete
     fun deleteMovie(movie: MovieEntities)
 
-    @Query("SELECT * FROM movies")
-    fun getMovieList(): List<MovieEntities>
+    @Query("SELECT * FROM movies WHERE id = :movieId")
+    suspend fun getMovieDetails(movieId: Int): MovieEntities?
 
     @Query("SELECT * FROM movies WHERE genres LIKE '%'|| :genre ||'%' ORDER BY id DESC LIMIT :limit OFFSET :offset")
     suspend fun getMoviesWithOffset(genre: String? = "", limit: Int, offset: Int): List<MovieEntities>

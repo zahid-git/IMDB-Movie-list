@@ -12,5 +12,6 @@ interface MovieRepository {
     suspend fun fetchMovieList(): Flow<DataResult<List<MovieDataModel>>>
     fun getPaginatedData(genre: String?): Flow<PagingData<MovieEntities>>
     suspend fun getMovieGenres(): Flow<DataResult<List<MovieGenresEntities>>>
+    fun getMovieDetails(movieId: Int): Flow<DataResult<MovieEntities>>
 
 }

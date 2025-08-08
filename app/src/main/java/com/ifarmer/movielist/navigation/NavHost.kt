@@ -77,8 +77,9 @@ fun AppNavHost(
             val homeViewModel: MovieDetailsViewModel = hiltViewModel()
             MovieDetailsScreen(
                 navController = navController,
+                movieId = movieId,
                 viewState = homeViewModel.viewState,
-                movieId = movieId
+                onEvent = homeViewModel::onEvent
             )
 
         }

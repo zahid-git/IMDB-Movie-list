@@ -27,6 +27,10 @@ class MovieLocalDataSource @Inject constructor(
         )
     }
 
+    suspend fun getSpecificMovie(movieId: Int): MovieEntities? {
+        return movieDao.getMovieDetails(movieId = movieId)
+    }
+
     fun saveAllMovieGenres(movieGenre: List<MovieGenresEntities>){
         return movieGenreDao.insetMovieGenres(movieGenre)
     }
@@ -34,4 +38,5 @@ class MovieLocalDataSource @Inject constructor(
     suspend fun getMovieGenres() : List<MovieGenresEntities>? {
         return movieGenreDao.getGenreList()
     }
+
 }

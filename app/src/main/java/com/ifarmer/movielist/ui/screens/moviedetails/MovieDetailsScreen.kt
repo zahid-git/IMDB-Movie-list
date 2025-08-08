@@ -11,8 +11,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,19 +28,28 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.ifarmer.movielist.R
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 
 @Composable
 fun MovieDetailsScreen(
     navController: NavHostController,
+    movieId: Int,
     viewState: StateFlow<MovieDetailsViewState>,
-    movieId: Int
+    onEvent: (MovieDetailsViewEvent) -> Unit
 ) {
+    val movieDetailsState by viewState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        onEvent(MovieDetailsViewEvent.fetchMovieData(movieId))
+    }
+
+    ShowMovieDetailsScreen(movieDetailsState)
 }
 
 @Composable
@@ -43,6 +60,7 @@ private fun ShowMovieDetailsScreen(
         modifier = Modifier
             .background(Color.White)
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         AsyncImage(
             modifier = Modifier.size(height = 200.dp, width = 125.dp),
@@ -57,7 +75,7 @@ private fun ShowMovieDetailsScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            /*movie?.genres?.forEach { genre ->
+            viewState.genres.forEach { genre ->
                 Card(
                     modifier = Modifier
                         .wrapContentWidth(),
@@ -73,7 +91,7 @@ private fun ShowMovieDetailsScreen(
                         fontSize = 10.sp
                     )
                 }
-            }*/
+            }
         }
 
         Row(
@@ -102,7 +120,7 @@ private fun ShowMovieDetailsScreen(
                     painter = painterResource(R.drawable.ic_time_clock),
                     contentDescription = "Movie Time"
                 )
-                Text(modifier = Modifier.padding(start = 10.dp), text = viewState.movieDuration+" Min")
+                Text(modifier = Modifier.padding(start = 10.dp), text = viewState.movieDuration)
             }
         }
 
@@ -121,7 +139,7 @@ private fun ShowMovieDetailsScreen(
         }
 
         Text(modifier = Modifier.padding(start = 10.dp), text = "Overview")
-        Text(modifier = Modifier.padding(start = 10.dp), text = "Test details")
+        Text(modifier = Modifier.padding(start = 10.dp), text = viewState.overview)
 
         Text(modifier = Modifier.padding(start = 10.dp), text = "Cast")
         FlowRow(
@@ -131,14 +149,16 @@ private fun ShowMovieDetailsScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            /*movie?.genres?.forEach { genre ->
+            viewState.actors.forEach { genre ->
                 Card(
                     modifier = Modifier
                         .wrapContentWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFD3D3D3), // Light cyan background
-                        contentColor = Color.Black // Text/Icon color
-                    )
+                        containerColor = Color(0xFFFFFFFF),
+                        contentColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(1.dp)
                 ) {
                     Text(
                         modifier = Modifier
@@ -147,7 +167,7 @@ private fun ShowMovieDetailsScreen(
                         fontSize = 10.sp
                     )
                 }
-            }*/
+            }
         }
     }
 }
@@ -157,7 +177,9 @@ private fun ShowMovieDetailsScreen(
 @Preview
 private fun MovieDetailsPreview() {
     ShowMovieDetailsScreen(
-        viewState = MovieDetailsViewState()
+        viewState = MovieDetailsViewState(
+            movieName = "Test Movie"
+        )
     )
 }
 

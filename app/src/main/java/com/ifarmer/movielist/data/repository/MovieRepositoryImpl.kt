@@ -120,5 +120,28 @@ class MovieRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+    override fun getMovieDetails(movieId: Int): Flow<DataResult<MovieEntities>> = flow {
+        try {
+            val movieDetails: MovieEntities? = movieLocalDataSource.getSpecificMovie(movieId = movieId)
+            movieDetails.let {
+                emit(DataResult.OnSuccess<MovieEntities>(
+                    data = it
+                ))
+            } ?: run {
+                emit(
+                    DataResult.OnFail<MovieEntities>(
+                        code = 400, message = "No Movie found", data = null
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            emit(
+                DataResult.OnFail<MovieEntities>(
+                    code = 400, message = e.message, data = null
+                )
+            )
+        }
+    }.flowOn(Dispatchers.IO)
+
 
 }

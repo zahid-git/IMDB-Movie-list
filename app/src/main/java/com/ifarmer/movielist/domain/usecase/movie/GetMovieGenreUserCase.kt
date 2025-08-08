@@ -1,4 +1,4 @@
-package com.ifarmer.movielist.domain.usecase
+package com.ifarmer.movielist.domain.usecase.movie
 
 import com.ifarmer.movielist.data.datasource.DataResult
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
