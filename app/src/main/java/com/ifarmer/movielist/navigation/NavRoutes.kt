@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 data object NavRoutes {
     @Serializable object SplashScreen
     @Serializable object HomepageScreen
-    @Serializable object MovieDetailsScreen
+    @Serializable data class MovieDetailsScreen(val movieId: Int)
 }

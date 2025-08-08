@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -28,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -42,24 +46,33 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ifarmer.movielist.R
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
+import com.ifarmer.movielist.navigation.NavRoutes
 import com.ifarmer.movielist.ui.components.CustomMovieGridView
 import com.ifarmer.movielist.ui.components.CustomMovieListView
 import com.ifarmer.movielist.ui.screens.homepage.HomepageViewEvent.changeGenre
 import com.ifarmer.movielist.ui.theme.MyIMBDModernMovieAppTheme
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-
 
 @Composable
 fun HomePageScreen(
     navController: NavHostController,
     viewState: StateFlow<HomepageViewState>,
-    onEvent: (HomepageViewEvent) -> Unit
+    onEvent: (HomepageViewEvent) -> Unit,
+    viewAction: SharedFlow<HomepageListAction>
 ) {
     val homePageViewState by viewState.collectAsStateWithLifecycle()
     val movieList = homePageViewState.movieData?.collectAsLazyPagingItems()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewAction) {
         movieList?.refresh()
+        viewAction.collect { action->
+            when(action) {
+                is HomepageListAction.NavigateToDetail -> {
+                    navController.navigate(NavRoutes.MovieDetailsScreen(action.movieId))
+                }
+            }
+        }
     }
 
     MainHomepageScreen(homePageViewState, movieList, onEvent)
@@ -67,7 +80,7 @@ fun HomePageScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainHomepageScreen(
+private fun MainHomepageScreen(
     viewState: HomepageViewState,
     movieList: LazyPagingItems<MovieEntities>?,
     onEvent: (HomepageViewEvent) -> Unit
@@ -139,6 +152,15 @@ fun MainHomepageScreen(
                     }
                 )
             },
+            floatingActionButton = {
+                // TODO:: Light and Dark more related
+                FloatingActionButton(
+                    onClick = { }
+                ) {
+                    Icon(Icons.Rounded.Info, contentDescription = "Add")
+                }
+            }
+
         ) { paddingValues -> // ← These padding values must be used
             Column(
                 modifier = Modifier
@@ -186,6 +208,7 @@ fun MainHomepageScreen(
 
                 AnimatedContent(
                     targetState = isGrid,
+                    contentAlignment = Alignment.Center,
                     transitionSpec = {
                         fadeIn(animationSpec = tween(300)) togetherWith
                                 fadeOut(animationSpec = tween(300))
@@ -194,8 +217,17 @@ fun MainHomepageScreen(
                 ) { targetIsGrid ->
                     if (movieList?.loadState?.refresh !is LoadState.Loading) {
                         when (targetIsGrid) {
-                            true -> CustomMovieGridView(movies = movieList)
-                            false -> CustomMovieListView(movies = movieList)
+                            true -> CustomMovieGridView(
+                                movies = movieList,
+                                onItemClick = { movieId ->
+                                    movieId?.let { onEvent(HomepageViewEvent.goToMovieDetails(it)) }
+                                })
+
+                            false -> CustomMovieListView(
+                                movies = movieList,
+                                onItemClick = { movieId ->
+                                    movieId?.let { onEvent(HomepageViewEvent.goToMovieDetails(it)) }
+                                })
                         }
                     }
                 }
@@ -207,7 +239,7 @@ fun MainHomepageScreen(
 
 @Composable
 @Preview
-fun HomepagePreview() {
+private fun HomepagePreview() {
     MainHomepageScreen(
         viewState = HomepageViewState(),
         movieList = null,

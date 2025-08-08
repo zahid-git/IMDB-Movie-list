@@ -1,11 +1,13 @@
 package com.ifarmer.movielist.ui.components
 
+import android.view.View
+import android.widget.AdapterView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
@@ -21,24 +23,28 @@ import com.ifarmer.movielist.R
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 
 @Composable
-fun CustomMovieGridView(movies: LazyPagingItems<MovieEntities>?){
+fun CustomMovieGridView(
+    movies: LazyPagingItems<MovieEntities>?,
+    onItemClick: (id: Int?) -> Unit
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2), // 2-column grid
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
+        modifier = Modifier.wrapContentSize(),
+        contentPadding = PaddingValues(10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(movies!!.itemCount) { position ->
             val movie = movies[position]
-            MovieCardView(movie)
+            MovieCardView(movie, onItemClick)
         }
     }
 }
 
 @Composable
-fun MovieCardView(movie: MovieEntities?){
-    Card(modifier = Modifier.fillMaxWidth()) {
+fun MovieCardView(movie: MovieEntities?, onItemClick: (id: Int?) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth(),
+        onClick = { onItemClick(movie?.id) }) {
         AsyncImage(
             modifier = Modifier.size(200.dp),
             model = movie?.posterUrl.toString(),
@@ -46,13 +52,13 @@ fun MovieCardView(movie: MovieEntities?){
             placeholder = painterResource(R.drawable.placeholder),
             error = painterResource(R.drawable.placeholder)
         )
-        movie?.title?.let { Text( text = it, modifier = Modifier.padding(16.dp)) }
+        movie?.title?.let { Text(text = it, maxLines = 1, modifier = Modifier.padding(16.dp)) }
     }
 }
 
 @Composable
 @Preview
-fun CustomMovieGridPreview(){
+fun CustomMovieGridPreview() {
     var dummyData = MovieEntities(
         id = 1,
         title = "Dummy Title",
@@ -64,5 +70,5 @@ fun CustomMovieGridPreview(){
         plot = "N/A",
         posterUrl = "https://m.media-amazon.com/images/M/MV5BMTg4MDk1ODExN15BMl5BanBnXkFtZTgwNzIyNjg3MDE@._V1_FMjpg_UX1000_.jpg"
     )
-    MovieCardView(dummyData)
+    MovieCardView(dummyData, { })
 }

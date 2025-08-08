@@ -32,7 +32,7 @@ import com.ifarmer.movielist.data.model.response.MovieDataModel
 
 
 @Composable
-fun CustomMovieListView(movies: LazyPagingItems<MovieEntities>?) {
+fun CustomMovieListView(movies: LazyPagingItems<MovieEntities>?, onItemClick: (movieId: Int?)-> Unit) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
@@ -41,17 +41,18 @@ fun CustomMovieListView(movies: LazyPagingItems<MovieEntities>?) {
         movies?.itemCount?.let {
             items(it) { position ->
                 val movie = movies[position]
-                MovieListItem(movie)
+                MovieListItem(movie = movie, onItemClick = onItemClick)
             }
         }
     }
 }
 
 @Composable
-fun MovieListItem(movie: MovieEntities?) {
+fun MovieListItem(movie: MovieEntities?, onItemClick: (movieId: Int?)-> Unit) {
     Card(
         modifier = Modifier
-            .wrapContentWidth()
+            .wrapContentWidth(),
+        onClick = { onItemClick(movie?.id) }
     ) {
         Row(
             modifier = Modifier
@@ -77,6 +78,7 @@ fun MovieListItem(movie: MovieEntities?) {
                         modifier = Modifier
                             .wrapContentWidth()
                             .padding(top = 10.dp),
+                        maxLines = 2,
                         fontSize = 18.sp,
                         text = it
                     )
@@ -143,6 +145,7 @@ fun CustomMovieListPreview() {
         posterUrl = "https://m.media-amazon.com/images/M/MV5BMTg4MDk1ODExN15BMl5BanBnXkFtZTgwNzIyNjg3MDE@._V1_FMjpg_UX1000_.jpg"
     )
     MovieListItem(
-        dummyData
+        dummyData,
+        { }
     )
 }

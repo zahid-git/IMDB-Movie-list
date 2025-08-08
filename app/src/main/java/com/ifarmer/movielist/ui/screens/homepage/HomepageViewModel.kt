@@ -28,8 +28,8 @@ class HomepageViewModel @Inject constructor(
     private val _viewState = MutableStateFlow(HomepageViewState())
     val viewState = _viewState.asStateFlow()
 
-    private val _viewEvent = MutableSharedFlow<HomepageViewEvent>()
-    val viewEvent = _viewEvent.asSharedFlow()
+    private val _action = MutableSharedFlow<HomepageListAction>()
+    val action = _action.asSharedFlow()
 
     init {
         getMovieData("")
@@ -67,6 +67,11 @@ class HomepageViewModel @Inject constructor(
         when(event) {
             is HomepageViewEvent.changeGenre -> {
                 getMovieData(event.genreName)
+            }
+            is HomepageViewEvent.goToMovieDetails -> {
+                viewModelScope.launch {
+                    _action.emit(HomepageListAction.NavigateToDetail(movieId = event.movieId))
+                }
             }
         }
     }

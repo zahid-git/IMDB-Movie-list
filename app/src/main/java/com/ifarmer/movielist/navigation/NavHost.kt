@@ -9,8 +9,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.ifarmer.movielist.ui.screens.homepage.HomePageScreen
 import com.ifarmer.movielist.ui.screens.homepage.HomepageViewModel
+import com.ifarmer.movielist.ui.screens.moviedetails.MovieDetailsScreen
+import com.ifarmer.movielist.ui.screens.moviedetails.MovieDetailsViewModel
 import com.ifarmer.movielist.ui.screens.splash.SplashScreen
 import com.ifarmer.movielist.ui.screens.splash.SplashScreenViewModel
 import com.ifarmer.movielist.utils.Constants
@@ -67,10 +70,16 @@ fun AppNavHost(
         }
         composable<NavRoutes.HomepageScreen> {
             val homeViewModel: HomepageViewModel = hiltViewModel()
-            HomePageScreen(navController = navController, viewState = homeViewModel.viewState, onEvent = homeViewModel::onEvent)
+            HomePageScreen(navController = navController, viewState = homeViewModel.viewState, onEvent = homeViewModel::onEvent, viewAction = homeViewModel.action)
         }
         composable<NavRoutes.MovieDetailsScreen> {
-
+            val movieId = it.toRoute<NavRoutes.MovieDetailsScreen>().movieId
+            val homeViewModel: MovieDetailsViewModel = hiltViewModel()
+            MovieDetailsScreen(
+                navController = navController,
+                viewState = homeViewModel.viewState,
+                movieId = movieId
+            )
 
         }
     }

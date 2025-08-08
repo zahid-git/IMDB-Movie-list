@@ -61,7 +61,7 @@ fun SplashScreen(
 
 
 @Composable
-fun MainSplashScreen(
+private fun MainSplashScreen(
     isLoading: Boolean,
     errorMessage: String?,
     tryAgain: ()-> Unit
@@ -114,7 +114,7 @@ fun MainSplashScreen(
 
 @Composable
 @Preview
-fun SplashScreenPreview() {
+private fun SplashScreenPreview() {
     MainSplashScreen(
         isLoading = false,
         errorMessage = "Fail to fetch data",
