@@ -1,4 +1,6 @@
 package com.ifarmer.movielist.ui.screens.splash
 
-class SplashScreenViewEvent {
+sealed class SplashScreenViewEvent {
+    object FetchMovieData : SplashScreenViewEvent()
+    object GoToHomePage : SplashScreenViewEvent()
 }

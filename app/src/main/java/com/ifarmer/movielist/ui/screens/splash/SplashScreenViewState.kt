@@ -1,4 +1,6 @@
 package com.ifarmer.movielist.ui.screens.splash
 
-class SplashScreenViewState {
-}
+data class SplashScreenViewState(
+    var isLoading: Boolean = false,
+    var errorMessage: String? = null
+)

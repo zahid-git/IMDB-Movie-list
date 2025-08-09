@@ -2,10 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("org.jetbrains.kotlin.kapt")
-    id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
-    id ("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    id("dagger.hilt.android.plugin")
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
+    id ("com.google.devtools.ksp") version "2.2.0-2.0.2" apply true
 }
 
 android {
@@ -55,6 +55,9 @@ android {
     kapt {
         correctErrorTypes = true
     }
+    hilt {
+        enableAggregatingTask = true
+    }
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -71,6 +74,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -82,6 +87,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.core.splashscreen)
 
     // Paging 3
     implementation(libs.androidx.paging.compose)
@@ -102,10 +108,11 @@ dependencies {
 
     // Room Database
     implementation(libs.androidx.room.runtime)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging)
 
     // Image Loader
     implementation(libs.coil.compose)
-
 
 }
