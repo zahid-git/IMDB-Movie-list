@@ -8,7 +8,8 @@ import com.ifarmer.movielist.data.datasource.local.database.movie.entities.Movie
 
 
 class MoviePagingSource(
-    private val  genre: String?,
+    private val genre: String?,
+    private val searchValue: String?,
     private val movieLocalDataSource: MovieLocalDataSource,
     private val numOfOffScreenPage: Int = 1,
 ) : PagingSource<Int, MovieEntities>() {
@@ -17,7 +18,8 @@ class MoviePagingSource(
         val pageIndex = params.key ?: 1
         val page = params.loadSize
         return try {
-            val movieEntities = movieLocalDataSource.getPaginatedData(genre = genre, limit = pageIndex, page = page)
+            val movieEntities =
+                movieLocalDataSource.getPaginatedData(searchValue = searchValue, genre = genre, limit = page, page = pageIndex)
 
             LoadResult.Page(
                 data = movieEntities,
@@ -25,7 +27,7 @@ class MoviePagingSource(
                 nextKey = if (movieEntities.isEmpty()) null else pageIndex + 1
             )
         } catch (e: Exception) {
-            Log.e("ERROR", "load: "+e.message )
+            Log.e("ERROR", "load: " + e.message)
             LoadResult.Error(e)
         }
     }

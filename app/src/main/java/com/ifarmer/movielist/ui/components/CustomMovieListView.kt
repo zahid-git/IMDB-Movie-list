@@ -1,5 +1,6 @@
 package com.ifarmer.movielist.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -60,7 +63,7 @@ fun MovieListItem(movie: MovieEntities?, onItemClick: (movieId: Int?)-> Unit) {
         ) {
             AsyncImage(
                 modifier = Modifier
-                    .height(180.dp)
+                    .height(150.dp)
                     .wrapContentWidth(),
                 alignment = Alignment.TopStart,
                 model = movie?.posterUrl,

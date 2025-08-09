@@ -21,8 +21,8 @@ interface MovieDao {
     @Query("SELECT * FROM movies WHERE id = :movieId")
     suspend fun getMovieDetails(movieId: Int): MovieEntities?
 
-    @Query("SELECT * FROM movies WHERE genres LIKE '%'|| :genre ||'%' ORDER BY id DESC LIMIT :limit OFFSET :offset")
-    suspend fun getMoviesWithOffset(genre: String? = "", limit: Int, offset: Int): List<MovieEntities>
+    @Query("SELECT * FROM movies WHERE (title LIKE '%'|| :search ||'%' OR plot LIKE '%'|| :search ||'%') AND genres LIKE '%'|| :genre ||'%' ORDER BY id DESC LIMIT :limit OFFSET :offset")
+    suspend fun getMoviesWithOffset(search: String? = "", genre: String? = "", limit: Int, offset: Int): List<MovieEntities>
 
     @Query("SELECT * FROM movies LIMIT :limit")
     fun getMovies(limit : Int ): List<MovieEntities>

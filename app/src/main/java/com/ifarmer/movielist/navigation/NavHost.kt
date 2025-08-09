@@ -3,6 +3,7 @@ package com.ifarmer.movielist.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -70,7 +71,12 @@ fun AppNavHost(
         }
         composable<NavRoutes.HomepageScreen> {
             val homeViewModel: HomepageViewModel = hiltViewModel()
-            HomePageScreen(navController = navController, viewState = homeViewModel.viewState, onEvent = homeViewModel::onEvent, viewAction = homeViewModel.action)
+            HomePageScreen(
+                navController = navController,
+                viewState = homeViewModel.viewState,
+                onEvent = homeViewModel::onEvent,
+                viewAction = homeViewModel.action
+            )
         }
         composable<NavRoutes.MovieDetailsScreen> {
             val movieId = it.toRoute<NavRoutes.MovieDetailsScreen>().movieId
@@ -79,6 +85,7 @@ fun AppNavHost(
                 navController = navController,
                 movieId = movieId,
                 viewState = homeViewModel.viewState,
+                viewAction = homeViewModel.viewAction,
                 onEvent = homeViewModel::onEvent
             )
 

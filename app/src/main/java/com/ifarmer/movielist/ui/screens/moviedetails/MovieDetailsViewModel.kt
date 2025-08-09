@@ -7,7 +7,9 @@ import com.ifarmer.movielist.domain.usecase.movie.GetAllMovieUseCase
 import com.ifarmer.movielist.domain.usecase.movie.GetMovieDetailsUseCase
 import com.ifarmer.movielist.ui.screens.homepage.HomepageViewEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +22,9 @@ class MovieDetailsViewModel @Inject constructor(
 
     private val _viewState = MutableStateFlow(MovieDetailsViewState())
     val viewState = _viewState.asStateFlow()
+
+    private val _viewAction = MutableSharedFlow<MovieDetailsAction>()
+    val viewAction = _viewAction.asSharedFlow()
 
     fun fetchMovieDetails(movieId: Int){
         viewModelScope.launch {
@@ -49,6 +54,12 @@ class MovieDetailsViewModel @Inject constructor(
         when(event) {
             is MovieDetailsViewEvent.fetchMovieData -> {
                 fetchMovieDetails(event.movieId)
+            }
+
+            MovieDetailsViewEvent.goToPreviousPage -> {
+                viewModelScope.launch {
+                    _viewAction.emit(MovieDetailsAction.GoToPreviousScreen)
+                }
             }
         }
     }

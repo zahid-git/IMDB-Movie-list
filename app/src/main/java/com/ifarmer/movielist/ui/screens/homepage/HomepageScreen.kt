@@ -5,15 +5,26 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -21,8 +32,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -33,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +69,7 @@ import com.ifarmer.movielist.ui.theme.MyIMBDModernMovieAppTheme
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
+
 @Composable
 fun HomePageScreen(
     navController: NavHostController,
@@ -65,16 +81,14 @@ fun HomePageScreen(
     val movieList = homePageViewState.movieData?.collectAsLazyPagingItems()
 
     LaunchedEffect(viewAction) {
-        movieList?.refresh()
-        viewAction.collect { action->
-            when(action) {
+        viewAction.collect { action ->
+            when (action) {
                 is HomepageListAction.NavigateToDetail -> {
                     navController.navigate(NavRoutes.MovieDetailsScreen(action.movieId))
                 }
             }
         }
     }
-
     MainHomepageScreen(homePageViewState, movieList, onEvent)
 }
 
@@ -83,11 +97,8 @@ fun HomePageScreen(
 private fun MainHomepageScreen(
     viewState: HomepageViewState,
     movieList: LazyPagingItems<MovieEntities>?,
-    onEvent: (HomepageViewEvent) -> Unit
+    onEvent: (HomepageViewEvent) -> Unit,
 ) {
-    var isGrid by remember { mutableStateOf(true) }
-    var expanded by remember { mutableStateOf(false) }
-
     MyIMBDModernMovieAppTheme {
         Scaffold(
             topBar = {
@@ -105,38 +116,54 @@ private fun MainHomepageScreen(
                         actionIconContentColor = Color.White
                     ),
                     actions = {
-                        IconButton(
-                            modifier = Modifier
-                                .padding(end = 10.dp)
-                                .size(35.dp),
-                            onClick = { }) {
-                            Icon(
-                                modifier = Modifier.padding(5.dp),
-                                painter = painterResource(R.drawable.ic_search),
-                                contentDescription = "Toggle View"
-                            )
+                        Box(modifier = Modifier.padding(end = 5.dp).size(35.dp)) {
+                            IconButton(onClick = { }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_favorite),
+                                    contentDescription = "Notifications"
+                                )
+                            }
+                            if (count > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = 2.dp, y = -5.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Red),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (count > 99) "99+" else count.toString(),
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 1,
+                                    )
+                                }
+                            }
                         }
                         IconButton(
                             modifier = Modifier
                                 .padding(end = 5.dp)
                                 .size(35.dp),
-                            onClick = { expanded = true }) {
+                            onClick = { onEvent(HomepageViewEvent.showGenre(true)) }) {
                             Icon(
                                 modifier = Modifier.padding(5.dp),
                                 painter = painterResource(R.drawable.ic_filter),
-                                contentDescription = "Toggle View"
+                                contentDescription = "Filter View"
                             )
                         }
                         DropdownMenu(
                             modifier = Modifier.height(300.dp),
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            expanded = viewState.isGenreShow,
+                            onDismissRequest = { onEvent(HomepageViewEvent.showGenre(false)) }
                         ) {
                             DropdownMenuItem(
                                 text = { Text("All") },
                                 onClick = {
                                     onEvent(changeGenre(""))
-                                    expanded = false
+                                    onEvent(HomepageViewEvent.showGenre(false))
                                 }
                             )
                             viewState.movieGenres.forEach { item ->
@@ -144,7 +171,7 @@ private fun MainHomepageScreen(
                                     text = { Text(item.name) },
                                     onClick = {
                                         onEvent(changeGenre(item.name))
-                                        expanded = false
+                                        onEvent(HomepageViewEvent.showGenre(false))
                                     }
                                 )
                             }
@@ -166,6 +193,31 @@ private fun MainHomepageScreen(
                 modifier = Modifier
                     .padding(paddingValues)
             ) {
+
+                TextField(
+                    value = viewState.searchValue,
+                    onValueChange = { onEvent(HomepageViewEvent.changeSerachValue(it)) },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+                    trailingIcon = {
+                        if (viewState.searchValue.isNotEmpty()) {
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = "Clear",
+                                modifier = Modifier.clickable { onEvent(HomepageViewEvent.changeSerachValue("")) })
+                        }
+                    },
+                    placeholder = { Text("Search...", color = Color.Gray) },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFE7F1F1), RoundedCornerShape(16.dp)),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+
                 Row(
                     modifier = Modifier
                         .wrapContentHeight()
@@ -186,10 +238,16 @@ private fun MainHomepageScreen(
                         modifier = Modifier
                             .padding(end = 5.dp)
                             .size(20.dp),
-                        onClick = { if (isGrid) isGrid = false }) {
+                        onClick = {
+                            if (viewState.isGrid) onEvent(
+                                HomepageViewEvent.changeListType(
+                                    false
+                                )
+                            )
+                        }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_list_view),
-                            tint = if (!isGrid) Color.Red else Color.Black,
+                            tint = if (!viewState.isGrid) Color.Red else Color.Black,
                             contentDescription = "Toggle View"
                         )
                     }
@@ -197,17 +255,23 @@ private fun MainHomepageScreen(
                     // Grid view icon
                     IconButton(
                         modifier = Modifier.size(20.dp),
-                        onClick = { if (!isGrid) isGrid = true }) {
+                        onClick = {
+                            if (!viewState.isGrid) onEvent(
+                                HomepageViewEvent.changeListType(
+                                    true
+                                )
+                            )
+                        }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_grid_view),
-                            tint = if (isGrid) Color.Red else Color.Black,
+                            tint = if (viewState.isGrid) Color.Red else Color.Black,
                             contentDescription = "Toggle View"
                         )
                     }
                 }
 
                 AnimatedContent(
-                    targetState = isGrid,
+                    targetState = viewState.isGrid,
                     contentAlignment = Alignment.Center,
                     transitionSpec = {
                         fadeIn(animationSpec = tween(300)) togetherWith
@@ -227,7 +291,8 @@ private fun MainHomepageScreen(
                                 movies = movieList,
                                 onItemClick = { movieId ->
                                     movieId?.let { onEvent(HomepageViewEvent.goToMovieDetails(it)) }
-                                })
+                                },
+                            )
                         }
                     }
                 }
@@ -237,12 +302,13 @@ private fun MainHomepageScreen(
     }
 }
 
+
 @Composable
 @Preview
 private fun HomepagePreview() {
     MainHomepageScreen(
         viewState = HomepageViewState(),
         movieList = null,
-        onEvent = { }
+        { },
     )
 }

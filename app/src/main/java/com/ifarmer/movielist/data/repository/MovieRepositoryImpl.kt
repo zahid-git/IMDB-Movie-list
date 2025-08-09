@@ -81,21 +81,20 @@ class MovieRepositoryImpl @Inject constructor(
             }
         }.flowOn(Dispatchers.IO)
 
-    override fun getPaginatedData(genre: String?): Flow<PagingData<MovieEntities>> {
+    override fun getPaginatedData(genre: String?, searchValue: String?): Flow<PagingData<MovieEntities>> {
         val pageSize: Int = 10 // As per business logic
         val enablePlaceHolders: Boolean = true
-        val prefetchDistance: Int = 1
-        val initialLoadSize: Int = 7
-        val maxCacheSize: Int = 2000
+        val prefetchDistance: Int = 3
+        val initialLoadSize: Int = 10
         return Pager(
             config = PagingConfig(
                 pageSize = pageSize,
                 enablePlaceholders = enablePlaceHolders,
                 prefetchDistance = prefetchDistance,
                 initialLoadSize = initialLoadSize,
-                maxSize = maxCacheSize
             ), pagingSourceFactory = {
                 MoviePagingSource(
+                    searchValue = searchValue,
                     genre = genre,
                     movieLocalDataSource = movieLocalDataSource,
                     numOfOffScreenPage = 1

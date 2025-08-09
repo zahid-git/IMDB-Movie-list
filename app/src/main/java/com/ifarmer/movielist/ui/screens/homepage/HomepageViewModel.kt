@@ -1,11 +1,15 @@
 package com.ifarmer.movielist.ui.screens.homepage
 
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import com.ifarmer.movielist.data.datasource.DataResult
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
 import com.ifarmer.movielist.domain.usecase.movie.GetMovieGenreUserCase
 import com.ifarmer.movielist.domain.usecase.movie.GetMoviePaginatedUseCase
+import com.ifarmer.movielist.ui.screens.homepage.HomepageListAction.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,17 +31,15 @@ class HomepageViewModel @Inject constructor(
     val action = _action.asSharedFlow()
 
     init {
-        getMovieData("")
+        getMovieData()
         getMovieGenreData()
     }
 
-    fun getMovieData(genre: String?){
-        viewModelScope.launch {
-            _viewState.value = _viewState.value.copy(
-                movieData = getMoviePaginatedUseCase(genre),
-                title = if(genre.isNullOrEmpty()) "All Movies" else  "Search result for : $genre"
-            )
-        }
+    fun getMovieData(){
+        _viewState.value = _viewState.value.copy(
+            movieData = getMoviePaginatedUseCase(searchValue = viewState.value.searchValue, genre =  viewState.value.selectedGenre).cachedIn(viewModelScope),
+            title = if(viewState.value.selectedGenre.isEmpty()) "All Movies" else  "Search result for : "+viewState.value.selectedGenre
+        )
     }
 
     fun getMovieGenreData(){
@@ -61,12 +63,32 @@ class HomepageViewModel @Inject constructor(
     fun onEvent(event: HomepageViewEvent){
         when(event) {
             is HomepageViewEvent.changeGenre -> {
-                getMovieData(event.genreName)
+                _viewState.value =_viewState.value.copy(
+                    selectedGenre = event.genreName
+                )
+                getMovieData()
             }
             is HomepageViewEvent.goToMovieDetails -> {
                 viewModelScope.launch {
-                    _action.emit(HomepageListAction.NavigateToDetail(movieId = event.movieId))
+                    _action.emit(NavigateToDetail(movieId = event.movieId))
                 }
+            }
+            is HomepageViewEvent.changeListType -> {
+                _viewState.value = _viewState.value.copy(
+                    isGrid = event.isGrid
+                )
+            }
+            is HomepageViewEvent.showGenre -> {
+                _viewState.value = _viewState.value.copy(
+                    isGenreShow = event.isExpand
+                )
+            }
+
+            is HomepageViewEvent.changeSerachValue -> {
+                _viewState.value =_viewState.value.copy(
+                    searchValue = event.search
+                )
+                getMovieData()
             }
         }
     }

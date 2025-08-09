@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,7 +32,7 @@ fun CustomMovieGridView(
     onItemClick: (id: Int?) -> Unit
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // 2-column grid
+        columns = GridCells.Fixed(2),
         modifier = Modifier.wrapContentSize(),
         contentPadding = PaddingValues(10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -46,11 +50,13 @@ fun MovieCardView(movie: MovieEntities?, onItemClick: (id: Int?) -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(),
         onClick = { onItemClick(movie?.id) }) {
         AsyncImage(
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier.size(240.dp),
+            alignment = Alignment.Center,
             model = movie?.posterUrl.toString(),
             contentDescription = "Movie Image",
             placeholder = painterResource(R.drawable.placeholder),
-            error = painterResource(R.drawable.placeholder)
+            error = painterResource(R.drawable.placeholder),
+            contentScale = ContentScale.FillWidth
         )
         movie?.title?.let { Text(text = it, maxLines = 1, modifier = Modifier.padding(16.dp)) }
     }
