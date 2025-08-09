@@ -1,15 +1,17 @@
 package com.ifarmer.movielist.ui.screens.homepage
 
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.ifarmer.movielist.data.datasource.DataResult
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieWithWishlistEntities
 import com.ifarmer.movielist.domain.usecase.movie.GetMovieGenreUserCase
 import com.ifarmer.movielist.domain.usecase.movie.GetMoviePaginatedUseCase
-import com.ifarmer.movielist.ui.screens.homepage.HomepageListAction.*
+import com.ifarmer.movielist.domain.usecase.wishlist.AddNewWishListUseCase
+import com.ifarmer.movielist.domain.usecase.wishlist.GetWishListUseCase
+import com.ifarmer.movielist.ui.screens.homepage.HomepageListAction.NavigateToDetail
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +23,9 @@ import javax.inject.Inject
 @HiltViewModel
 class HomepageViewModel @Inject constructor(
     private val getMoviePaginatedUseCase: GetMoviePaginatedUseCase,
-    private val getMovieGenreUserCase: GetMovieGenreUserCase
+    private val getMovieGenreUserCase: GetMovieGenreUserCase,
+    private val addNewWishUseCase: AddNewWishListUseCase,
+    private val getWishListUseCase: GetWishListUseCase
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(HomepageViewState())
@@ -33,21 +37,39 @@ class HomepageViewModel @Inject constructor(
     init {
         getMovieData()
         getMovieGenreData()
+        getWishList()
     }
 
-    fun getMovieData(){
+    fun getMovieData() {
         _viewState.value = _viewState.value.copy(
-            movieData = getMoviePaginatedUseCase(searchValue = viewState.value.searchValue, genre =  viewState.value.selectedGenre).cachedIn(viewModelScope),
-            title = if(viewState.value.selectedGenre.isEmpty()) "All Movies" else  "Search result for : "+viewState.value.selectedGenre
+            movieData = getMoviePaginatedUseCase(
+                searchValue = viewState.value.searchValue,
+                genre = viewState.value.selectedGenre
+            ).cachedIn(viewModelScope),
+            title = if (viewState.value.selectedGenre.isEmpty()) "All Movies" else "Search result for : " + viewState.value.selectedGenre
         )
     }
 
-    fun getMovieGenreData(){
+    fun getWishList() {
+        viewModelScope.launch {
+            getWishListUseCase().collect { result ->
+                when (result) {
+                    is DataResult.OnFail<*> -> TODO()
+                    is DataResult.OnLoading<*> -> TODO()
+                    is DataResult.OnSuccess<List<MovieEntities>> -> {
+                        result.data?.size?.let { _viewState.value = _viewState.value.copy(wishCount = it) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun getMovieGenreData() {
         viewModelScope.launch {
             getMovieGenreUserCase().collect {
-                when(it) {
-                    is DataResult.OnFail<*> -> { }
-                    is DataResult.OnLoading<*> -> { }
+                when (it) {
+                    is DataResult.OnFail<*> -> {}
+                    is DataResult.OnLoading<*> -> {}
                     is DataResult.OnSuccess<List<MovieGenresEntities>> -> {
                         it.data?.let { data ->
                             _viewState.value = _viewState.value.copy(
@@ -60,24 +82,27 @@ class HomepageViewModel @Inject constructor(
         }
     }
 
-    fun onEvent(event: HomepageViewEvent){
-        when(event) {
+    fun onEvent(event: HomepageViewEvent) {
+        when (event) {
             is HomepageViewEvent.changeGenre -> {
-                _viewState.value =_viewState.value.copy(
+                _viewState.value = _viewState.value.copy(
                     selectedGenre = event.genreName
                 )
                 getMovieData()
             }
+
             is HomepageViewEvent.goToMovieDetails -> {
                 viewModelScope.launch {
                     _action.emit(NavigateToDetail(movieId = event.movieId))
                 }
             }
+
             is HomepageViewEvent.changeListType -> {
                 _viewState.value = _viewState.value.copy(
                     isGrid = event.isGrid
                 )
             }
+
             is HomepageViewEvent.showGenre -> {
                 _viewState.value = _viewState.value.copy(
                     isGenreShow = event.isExpand
@@ -85,10 +110,17 @@ class HomepageViewModel @Inject constructor(
             }
 
             is HomepageViewEvent.changeSerachValue -> {
-                _viewState.value =_viewState.value.copy(
+                _viewState.value = _viewState.value.copy(
                     searchValue = event.search
                 )
                 getMovieData()
+            }
+
+            is HomepageViewEvent.addToFavoriteItem -> {
+                viewModelScope.launch {
+                    addNewWishUseCase(movieId = event.movieId).collect { }
+                    getWishList()
+                }
             }
         }
     }

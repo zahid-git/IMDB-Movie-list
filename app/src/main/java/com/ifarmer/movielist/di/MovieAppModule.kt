@@ -4,7 +4,6 @@ import com.ifarmer.movielist.data.datasource.local.database.movie.MovieLocalData
 import com.ifarmer.movielist.data.datasource.remote.ApiService
 import com.ifarmer.movielist.data.repository.MovieRepositoryImpl
 import com.ifarmer.movielist.domain.repository.MovieRepository
-import com.ifarmer.movielist.domain.usecase.movie.GetAllMovieUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,15 +20,5 @@ object MovieAppModule {
     @Provides
     @Singleton
     fun provideMovieRepository(apiService: ApiService, movieLocalDataSource: MovieLocalDataSource): MovieRepository = MovieRepositoryImpl(apiService = apiService, movieLocalDataSource = movieLocalDataSource)
-
-    /**
-     * Provides Movie Use-case
-     * */
-    @Provides
-    @Singleton
-    fun provideMovieUseCase(movieRepository: MovieRepository): GetAllMovieUseCase {
-        return GetAllMovieUseCase(movieRepository)
-    }
-
 
 }

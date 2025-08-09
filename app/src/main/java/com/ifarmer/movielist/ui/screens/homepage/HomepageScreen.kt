@@ -17,13 +17,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.DropdownMenu
@@ -42,9 +39,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.paging.LoadState
@@ -61,6 +56,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ifarmer.movielist.R
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieWithWishlistEntities
 import com.ifarmer.movielist.navigation.NavRoutes
 import com.ifarmer.movielist.ui.components.CustomMovieGridView
 import com.ifarmer.movielist.ui.components.CustomMovieListView
@@ -96,7 +92,7 @@ fun HomePageScreen(
 @Composable
 private fun MainHomepageScreen(
     viewState: HomepageViewState,
-    movieList: LazyPagingItems<MovieEntities>?,
+    movieList: LazyPagingItems<MovieWithWishlistEntities>?,
     onEvent: (HomepageViewEvent) -> Unit,
 ) {
     MyIMBDModernMovieAppTheme {
@@ -116,26 +112,29 @@ private fun MainHomepageScreen(
                         actionIconContentColor = Color.White
                     ),
                     actions = {
-                        Box(modifier = Modifier.padding(end = 5.dp).size(35.dp)) {
+                        Box(modifier = Modifier.padding(end = 5.dp).size(40.dp)) {
                             IconButton(onClick = { }) {
                                 Icon(
+                                    modifier = Modifier.size(30.dp),
                                     painter = painterResource(R.drawable.ic_favorite),
                                     contentDescription = "Notifications"
                                 )
                             }
-                            if (count > 0) {
+                            if (viewState.wishCount > 0) {
                                 Box(
                                     modifier = Modifier
-                                        .size(16.dp)
+                                        .padding(10.dp)
+                                        .size(18.dp)
                                         .align(Alignment.TopEnd)
-                                        .offset(x = 2.dp, y = -5.dp)
+                                        .offset(x = 10.dp, y = (-15).dp)
                                         .clip(CircleShape)
                                         .background(Color.Red),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = if (count > 99) "99+" else count.toString(),
+                                        text = if (viewState.wishCount > 99) "99+" else viewState.wishCount.toString(),
                                         color = Color.White,
+                                        fontSize = 8.sp,
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         textAlign = TextAlign.Center,
                                         maxLines = 1,
@@ -179,16 +178,16 @@ private fun MainHomepageScreen(
                     }
                 )
             },
-            floatingActionButton = {
-                // TODO:: Light and Dark more related
-                FloatingActionButton(
-                    onClick = { }
-                ) {
-                    Icon(Icons.Rounded.Info, contentDescription = "Add")
-                }
-            }
+//            floatingActionButton = {
+//                // TODO:: Light and Dark more related
+//                FloatingActionButton(
+//                    onClick = { }
+//                ) {
+//                    Icon(Icons.Rounded.Info, contentDescription = "Add")
+//                }
+//            }
 
-        ) { paddingValues -> // ← These padding values must be used
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -282,16 +281,23 @@ private fun MainHomepageScreen(
                     if (movieList?.loadState?.refresh !is LoadState.Loading) {
                         when (targetIsGrid) {
                             true -> CustomMovieGridView(
-                                movies = movieList,
-                                onItemClick = { movieId ->
-                                    movieId?.let { onEvent(HomepageViewEvent.goToMovieDetails(it)) }
-                                })
-
-                            false -> CustomMovieListView(
-                                movies = movieList,
+                                movieWishList = movieList,
                                 onItemClick = { movieId ->
                                     movieId?.let { onEvent(HomepageViewEvent.goToMovieDetails(it)) }
                                 },
+                                onFavoriteClick = {movieId->
+                                    movieId?.let { onEvent(HomepageViewEvent.addToFavoriteItem(it)) }
+                                }
+                            )
+
+                            false -> CustomMovieListView(
+                                movieWishList = movieList,
+                                onItemClick = { movieId ->
+                                    movieId?.let { onEvent(HomepageViewEvent.goToMovieDetails(it)) }
+                                },
+                                onFavoriteClick = {movieId->
+                                    movieId?.let { onEvent(HomepageViewEvent.addToFavoriteItem(it)) }
+                                }
                             )
                         }
                     }
@@ -307,7 +313,9 @@ private fun MainHomepageScreen(
 @Preview
 private fun HomepagePreview() {
     MainHomepageScreen(
-        viewState = HomepageViewState(),
+        viewState = HomepageViewState(
+            wishCount = 100
+        ),
         movieList = null,
         { },
     )

@@ -1,10 +1,11 @@
 package com.ifarmer.movielist.data.datasource.local.database.movie
 
-import android.util.Log
+import androidx.paging.PagingSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.dao.MovieDao
 import com.ifarmer.movielist.data.datasource.local.database.movie.dao.MovieGenreDao
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieWithWishlistEntities
 import javax.inject.Inject
 
 class MovieLocalDataSource @Inject constructor(
@@ -20,13 +21,10 @@ class MovieLocalDataSource @Inject constructor(
         return movieDao.getMovies(1).isNotEmpty()
     }
 
-    suspend fun getPaginatedData(genre: String?, searchValue: String?, limit: Int, page: Int): List<MovieEntities> {
-        Log.e("TAG", "getPaginatedData: $genre - $searchValue - $limit - $page")
+    fun getPaginatedData(genre: String?, searchValue: String?): PagingSource<Int, MovieWithWishlistEntities> {
         return movieDao.getMoviesWithOffset(
             search = searchValue,
-            genre = genre,
-            limit = limit,
-            offset = (page-1)*limit
+            genre = genre
         )
     }
 

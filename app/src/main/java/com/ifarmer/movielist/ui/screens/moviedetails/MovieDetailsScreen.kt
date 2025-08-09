@@ -132,7 +132,8 @@ private fun ShowMovieDetailsScreen(
                         .wrapContentWidth(),
                     model = viewState.image,
                     contentDescription = "Movie Image",
-                    placeholder = painterResource(R.drawable.placeholder)
+                    placeholder = painterResource(R.drawable.placeholder),
+                    error = painterResource(R.drawable.placeholder)
                 )
             }
             Text(

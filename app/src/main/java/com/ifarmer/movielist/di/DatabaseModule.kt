@@ -6,6 +6,8 @@ import com.ifarmer.movielist.data.datasource.local.database.AppDatabase
 import com.ifarmer.movielist.data.datasource.local.database.movie.MovieLocalDataSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.dao.MovieDao
 import com.ifarmer.movielist.data.datasource.local.database.movie.dao.MovieGenreDao
+import com.ifarmer.movielist.data.datasource.local.database.wishlist.WishListDataSource
+import com.ifarmer.movielist.data.datasource.local.database.wishlist.dao.WishListDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +23,9 @@ object DatabaseModule {
      * */
     @Singleton
     @Provides
-    fun provideLocalDatabase(context: Context): AppDatabase { return Room.databaseBuilder(context, AppDatabase::class.java, "MovieDB").build() }
+    fun provideLocalDatabase(context: Context): AppDatabase {
+        return Room.databaseBuilder(context, AppDatabase::class.java, "MovieDB").build()
+    }
 
     /**
      * Provides MovieDao
@@ -42,6 +46,27 @@ object DatabaseModule {
      * */
     @Singleton
     @Provides
-    fun provideMovieDataSource(movieDao: MovieDao, movieGenreDao: MovieGenreDao ): MovieLocalDataSource = MovieLocalDataSource(movieDao = movieDao, movieGenreDao = movieGenreDao)
+    fun provideMovieDataSource(
+        movieDao: MovieDao,
+        movieGenreDao: MovieGenreDao
+    ): MovieLocalDataSource =
+        MovieLocalDataSource(movieDao = movieDao, movieGenreDao = movieGenreDao)
+
+
+    /**
+     * Provides Wishlist Dao
+     * */
+    @Singleton
+    @Provides
+    fun provideWishlistDAO(db: AppDatabase): WishListDao = db.wishlistDao
+
+    /**
+     * Provides Wishlist Datasource
+     * */
+    @Singleton
+    @Provides
+    fun provideWishListDataSource(wishListDao: WishListDao): WishListDataSource =
+        WishListDataSource(wishlistDao = wishListDao)
+
 
 }

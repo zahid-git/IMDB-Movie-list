@@ -8,6 +8,7 @@ import com.ifarmer.movielist.data.datasource.MoviePagingSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.MovieLocalDataSource
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieGenresEntities
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieWithWishlistEntities
 import com.ifarmer.movielist.data.datasource.remote.ApiService
 import com.ifarmer.movielist.data.datasource.remote.NetworkCallback
 import com.ifarmer.movielist.data.model.response.MovieDataModel
@@ -47,23 +48,12 @@ class MovieRepositoryImpl @Inject constructor(
                     }
 
                     is DataResult.OnSuccess<*> -> {
-                        var movieList = movieData.data?.data?.movies.let {
-                            var movieEntities: ArrayList<MovieEntities> = arrayListOf()
-                            for (movie in it!!) {
-                                movieEntities.add(movie.toEntity())
-                            }
-                            movieEntities
-                        }
+                        val movieList = ArrayList(movieData.data?.data?.movies?.map { it.toEntity() } ?: emptyList())
                         movieLocalDataSource.saveAllMovies(movieList)
 
-                        var movieGenreData = movieData.data?.data?.genres.let {
-                            var genres: ArrayList<MovieGenresEntities> = arrayListOf()
-                            var id = 1
-                            for (genre in it!!) {
-                                genres.add(MovieGenresEntities(id = id++, name = genre))
-                            }
-                            genres
-                        }
+                        var movieGenreData =  movieData.data?.data?.genres
+                            ?.map { MovieGenresEntities(name = it) }
+                            ?.let { ArrayList(it) } ?: arrayListOf()
                         movieLocalDataSource.saveAllMovieGenres(movieGenreData)
 
 
@@ -81,11 +71,11 @@ class MovieRepositoryImpl @Inject constructor(
             }
         }.flowOn(Dispatchers.IO)
 
-    override fun getPaginatedData(genre: String?, searchValue: String?): Flow<PagingData<MovieEntities>> {
+    override fun getPaginatedData(genre: String?, searchValue: String?): Flow<PagingData<MovieWithWishlistEntities>> {
         val pageSize: Int = 10 // As per business logic
-        val enablePlaceHolders: Boolean = true
-        val prefetchDistance: Int = 3
-        val initialLoadSize: Int = 10
+        val enablePlaceHolders = true
+        val prefetchDistance = 3
+        val initialLoadSize = 10
         return Pager(
             config = PagingConfig(
                 pageSize = pageSize,
@@ -93,12 +83,7 @@ class MovieRepositoryImpl @Inject constructor(
                 prefetchDistance = prefetchDistance,
                 initialLoadSize = initialLoadSize,
             ), pagingSourceFactory = {
-                MoviePagingSource(
-                    searchValue = searchValue,
-                    genre = genre,
-                    movieLocalDataSource = movieLocalDataSource,
-                    numOfOffScreenPage = 1
-                )
+                movieLocalDataSource.getPaginatedData(searchValue = searchValue, genre = genre)
             }
         ).flow
     }

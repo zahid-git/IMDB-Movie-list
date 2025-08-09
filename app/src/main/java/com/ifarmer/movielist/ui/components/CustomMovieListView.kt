@@ -1,7 +1,9 @@
 package com.ifarmer.movielist.ui.components
 
-import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,18 +13,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,27 +36,38 @@ import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
 import com.ifarmer.movielist.R
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
-import com.ifarmer.movielist.data.model.response.MovieDataModel
+import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieWithWishlistEntities
 
 
 @Composable
-fun CustomMovieListView(movies: LazyPagingItems<MovieEntities>?, onItemClick: (movieId: Int?)-> Unit) {
+fun CustomMovieListView(
+    movieWishList: LazyPagingItems<MovieWithWishlistEntities>?,
+    onItemClick: (movieId: Int?) -> Unit,
+    onFavoriteClick: (id: Int?) -> Unit
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        movies?.itemCount?.let {
+        movieWishList?.itemCount?.let {
             items(it) { position ->
-                val movie = movies[position]
-                MovieListItem(movie = movie, onItemClick = onItemClick)
+                val movieWishData = movieWishList[position]
+                MovieListItem(movieWishData = movieWishData, onItemClick = onItemClick, onFavoriteClick = onFavoriteClick)
             }
         }
     }
 }
 
 @Composable
-fun MovieListItem(movie: MovieEntities?, onItemClick: (movieId: Int?)-> Unit) {
+fun MovieListItem(
+    movieWishData: MovieWithWishlistEntities?,
+    onItemClick: (movieId: Int?) -> Unit,
+    onFavoriteClick: (id: Int?) -> Unit
+) {
+    val movie = movieWishData?.movie
+    val isWishItem = movieWishData?.isWishlistItem
+
     Card(
         modifier = Modifier
             .wrapContentWidth(),
@@ -71,50 +87,64 @@ fun MovieListItem(movie: MovieEntities?, onItemClick: (movieId: Int?)-> Unit) {
                 placeholder = painterResource(R.drawable.placeholder),
                 error = painterResource(R.drawable.placeholder)
             )
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(start = 10.dp, end = 10.dp)
-            ) {
-                movie?.title?.let {
-                    Text(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .padding(top = 10.dp),
-                        maxLines = 2,
-                        fontSize = 18.sp,
-                        text = it
-                    )
-                }
-                movie?.year?.let {
-                    Text(
-                        modifier = Modifier.padding(top = 5.dp),
-                        fontSize = 12.sp,
-                        text = it
-                    )
-                }
-                FlowRow(
+            Box {
+                Image(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp, bottom = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .align(Alignment.TopEnd)
+                        .padding(top = 5.dp, end = 5.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            onFavoriteClick(movie?.id)
+                        },
+                    imageVector = if (isWishItem == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    colorFilter = ColorFilter.tint(if (isWishItem == true) Color.Red else Color.Gray),
+                    contentDescription = "Favorite",
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(start = 10.dp, end = 10.dp)
                 ) {
-                    movie?.genres?.forEach { genre ->
-                        Card(
+                    movie?.title?.let {
+                        Text(
                             modifier = Modifier
-                                .wrapContentWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFD3D3D3), // Light cyan background
-                                contentColor = Color.Black // Text/Icon color
-                            )
-                        ) {
-                            Text(
+                                .wrapContentWidth()
+                                .padding(top = 10.dp),
+                            maxLines = 2,
+                            fontSize = 18.sp,
+                            text = it
+                        )
+                    }
+                    movie?.year?.let {
+                        Text(
+                            modifier = Modifier.padding(top = 5.dp),
+                            fontSize = 12.sp,
+                            text = it
+                        )
+                    }
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp, bottom = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        movie?.genres?.forEach { genre ->
+                            Card(
                                 modifier = Modifier
-                                    .padding(start = 8.dp, end = 8.dp),
-                                text = genre,
-                                fontSize = 10.sp
-                            )
+                                    .wrapContentWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFD3D3D3), // Light cyan background
+                                    contentColor = Color.Black // Text/Icon color
+                                )
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(start = 8.dp, end = 8.dp),
+                                    text = genre,
+                                    fontSize = 10.sp
+                                )
+                            }
                         }
                     }
                 }
@@ -148,7 +178,7 @@ fun CustomMovieListPreview() {
         posterUrl = "https://m.media-amazon.com/images/M/MV5BMTg4MDk1ODExN15BMl5BanBnXkFtZTgwNzIyNjg3MDE@._V1_FMjpg_UX1000_.jpg"
     )
     MovieListItem(
-        dummyData,
-        { }
+        MovieWithWishlistEntities(movie = dummyData, isWishlistItem = true),
+        { } , { }
     )
 }

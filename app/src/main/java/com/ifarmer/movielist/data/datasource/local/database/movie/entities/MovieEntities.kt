@@ -15,7 +15,7 @@ data class MovieEntities(
     @ColumnInfo(name = "director") val director: String,
     @ColumnInfo(name = "actors") val actors: String,
     @ColumnInfo(name = "plot") val plot: String,
-    @ColumnInfo(name = "posterUrl") val posterUrl: String,
+    @ColumnInfo(name = "posterUrl") val posterUrl: String
 )
 
 fun MovieEntities.toDataModel(): MovieDataModel {
