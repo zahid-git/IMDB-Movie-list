@@ -83,7 +83,8 @@ fun AppNavHost(
             val homepageViewModel: HomepageNewViewModel = hiltViewModel()
             ShowMovieList(
                 navController=navController,
-                viewState = homepageViewModel.viewState
+                viewState = homepageViewModel.viewState,
+                viewEvent = homepageViewModel::onEvent
             )
         }
         composable<NavRoutes.MovieDetailsScreen> {

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ifarmer.movielist.data.datasource.DataResult
 import com.ifarmer.movielist.domain.usecase.movie.GetMovieListUseCase
+import com.ifarmer.movielist.ui.screens.homepage.HomepageListAction.NavigateToDetail
+import com.ifarmer.movielist.ui.screens.homepage.HomepageViewEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,14 +38,25 @@ class HomepageNewViewModel @Inject constructor(
                     is DataResult.OnSuccess<*> -> {
                         it.data?.let { data ->
                             _viewState.value = _viewState.value.copy(
-                                movieList = _viewState.value.movieList+data
+                                movieList = data
                             )
                         }
                     }
                 }
             }
         }
+    }
 
+    fun onEvent(event: HomepageNewViewEvent) {
+        when (event) {
+            is HomepageNewViewEvent.OnFavorite -> {
+                val updatedList = _viewState.value.movieList.toMutableList()
+                updatedList[event.index] = updatedList[event.index].copy(isWishlistItem = true)
+                _viewState.value = _viewState.value.copy(
+                    movieList = updatedList
+                )
+            }
+        }
     }
 
 }
