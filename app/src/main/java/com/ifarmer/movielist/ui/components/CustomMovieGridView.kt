@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import com.ifarmer.movielist.R
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieEntities
 import com.ifarmer.movielist.data.datasource.local.database.movie.entities.MovieWithWishlistEntities
+import com.ifarmer.movielist.data.model.response.MovieDataModel
 
 @Composable
 fun CustomMovieGridView(
@@ -56,7 +57,7 @@ fun CustomMovieGridView(
 }
 
 @Composable
-fun MovieCardView(movieWishData: MovieWithWishlistEntities?, onItemClick: (id: Int?) -> Unit, onFavoriteClick: (id: Int?) -> Unit) {
+fun MovieCardView(movieWishData: MovieWithWishlistEntities?, onItemClick: (Int?) -> Unit, onFavoriteClick: (Int?) -> Unit) {
     val movie = movieWishData?.movie
     val isWishItem = movieWishData?.isWishlistItem
 
@@ -95,6 +96,27 @@ fun MovieCardView(movieWishData: MovieWithWishlistEntities?, onItemClick: (id: I
                 colorFilter = ColorFilter.tint(if(isWishItem == true) Color.Red else Color.Gray),
                 contentDescription = "Favorite",
             )
+        }
+    }
+}
+
+
+@Composable
+fun CustomNewMovieGridView(
+    movieWishList: List<MovieWithWishlistEntities>?,
+    onItemClick: (id: Int?) -> Unit,
+    onFavoriteClick: (id: Int?) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.wrapContentSize(),
+        contentPadding = PaddingValues(10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(movieWishList!!.size) { position ->
+            val movieWishData = movieWishList[position]
+            MovieCardView(movieWishData = movieWishData, onItemClick, onFavoriteClick)
         }
     }
 }

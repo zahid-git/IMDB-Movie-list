@@ -25,6 +25,9 @@ interface MovieDao {
     suspend fun getMovieDetails(movieId: Int): MovieEntities?
 
     @Query("SELECT movie.* , CASE WHEN wishlist.movie_id IS NOT NULL THEN 1 ELSE 0 END as isWishlistItem FROM movies movie LEFT JOIN wishlist wishlist ON movie.id = wishlist.movie_id  WHERE (title LIKE '%'|| :search ||'%' OR plot LIKE '%'|| :search ||'%') AND genres LIKE '%'|| :genre ||'%' ORDER BY movie.id DESC")
+    fun getMovies(search: String? = "", genre: String? = ""):  List<MovieWithWishlistEntities>
+
+    @Query("SELECT movie.* , CASE WHEN wishlist.movie_id IS NOT NULL THEN 1 ELSE 0 END as isWishlistItem FROM movies movie LEFT JOIN wishlist wishlist ON movie.id = wishlist.movie_id  WHERE (title LIKE '%'|| :search ||'%' OR plot LIKE '%'|| :search ||'%') AND genres LIKE '%'|| :genre ||'%' ORDER BY movie.id DESC")
         fun getMoviesWithOffset(search: String? = "", genre: String? = ""): PagingSource<Int, MovieWithWishlistEntities>
 
     @Query("SELECT * FROM movies LIMIT :limit")

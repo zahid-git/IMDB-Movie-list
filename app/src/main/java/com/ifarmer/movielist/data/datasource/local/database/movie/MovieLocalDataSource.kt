@@ -21,6 +21,13 @@ class MovieLocalDataSource @Inject constructor(
         return movieDao.getMovies(1).isNotEmpty()
     }
 
+    fun getMovieList(genre: String?, searchValue: String?): List<MovieWithWishlistEntities>{
+        return movieDao.getMovies(
+            search = searchValue,
+            genre = genre
+        )
+    }
+
     fun getPaginatedData(genre: String?, searchValue: String?): PagingSource<Int, MovieWithWishlistEntities> {
         return movieDao.getMoviesWithOffset(
             search = searchValue,

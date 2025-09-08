@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
 
-    suspend fun fetchMovieList(): Flow<DataResult<List<MovieDataModel>>>
+    suspend fun fetchMovieList(): Flow<DataResult<List<MovieWithWishlistEntities>>>
     fun getPaginatedData(genre: String?, searchValue: String?): Flow<PagingData<MovieWithWishlistEntities>>
     suspend fun getMovieGenres(): Flow<DataResult<List<MovieGenresEntities>>>
     fun getMovieDetails(movieId: Int): Flow<DataResult<MovieEntities>>

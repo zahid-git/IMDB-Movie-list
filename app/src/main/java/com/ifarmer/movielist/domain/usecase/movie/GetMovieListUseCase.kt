@@ -7,10 +7,10 @@ import com.ifarmer.movielist.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetAllMovieUseCase @Inject constructor(
+class GetMovieListUseCase @Inject constructor(
     private val repository: MovieRepository
 ) {
-    suspend operator fun invoke(): Flow<DataResult<List<MovieWithWishlistEntities>>> {
+    suspend operator fun invoke(genre: String?, searchValue: String?): Flow<DataResult<List<MovieWithWishlistEntities>>> {
         return repository.fetchMovieList()
     }
 }

@@ -25,28 +25,30 @@ class MovieRepositoryImpl @Inject constructor(
     private val movieLocalDataSource: MovieLocalDataSource
 ) : MovieRepository, NetworkCallback() {
 
-    override suspend fun fetchMovieList(): Flow<DataResult<List<MovieDataModel>>> =
+    override suspend fun fetchMovieList(): Flow<DataResult<List<MovieWithWishlistEntities>>> =
         flow {
             try {
-                emit(DataResult.OnLoading<List<MovieDataModel>>())
+                // If there is data saved in local database
+                emit(DataResult.OnLoading())
                 if (movieLocalDataSource.isDataExist()) {
-                    emit(DataResult.OnSuccess<List<MovieDataModel>>(data = arrayListOf()))
+                    val movieList = movieLocalDataSource.getMovieList("","")
+                    emit(DataResult.OnSuccess(data = movieList))
                     return@flow
                 }
                 val movieData = safeAPICall { apiService.fetchMovieData() }
 
+                // If there is no data fetched and saved
                 when (movieData) {
                     is DataResult.OnLoading<*> -> {}
                     is DataResult.OnFail<*> -> {
                         emit(
-                            DataResult.OnFail<List<MovieDataModel>>(
+                            DataResult.OnFail<List<MovieWithWishlistEntities>>(
                                 data = null,
                                 code = movieData.code,
                                 message = movieData.message
                             )
                         )
                     }
-
                     is DataResult.OnSuccess<*> -> {
                         val movieList = ArrayList(movieData.data?.data?.movies?.map { it.toEntity() } ?: emptyList())
                         movieLocalDataSource.saveAllMovies(movieList)
@@ -56,13 +58,12 @@ class MovieRepositoryImpl @Inject constructor(
                             ?.let { ArrayList(it) } ?: arrayListOf()
                         movieLocalDataSource.saveAllMovieGenres(movieGenreData)
 
-
-                        emit(DataResult.OnSuccess<List<MovieDataModel>>(data = arrayListOf()))
+                        //emit(DataResult.OnSuccess(data = movieData.data?.data?.movies))
                     }
                 }
             } catch (e: Exception) {
                 emit(
-                    DataResult.OnFail<List<MovieDataModel>>(
+                    DataResult.OnFail<List<MovieWithWishlistEntities>>(
                         data = null,
                         code = null,
                         message = e.message
